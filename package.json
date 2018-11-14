@@ -1,0 +1,28 @@
+{
+  "name": "whiteboard",
+  "version": "1.0.0",
+  "description": "Collaborative Whiteboard",
+  "main": "server.js",
+  "directories": {},
+  "scripts": {
+    "test": "echo \"No tests needed!\" && exit 1"
+  },
+  "repository": {
+    "type": "",
+    "url": ""
+  },
+  "keywords": [
+    "whiteboard",
+    "whiteboard-draw",
+    "Sketchboard",
+    "lightweight"
+  ],
+  "dependencies": {
+    "express": "*",
+    "formidable": "*",
+    "fs-extra": "*",
+    "socket.io": "2.*"
+  },
+  "author": "cpsharma",
+  "license": "MIT"
+}
