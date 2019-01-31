@@ -1,15 +1,28 @@
-var PORT = 42000; //Set port for the app
+var PORT = 3000; //Set port for the app
 
 fs = require("fs-extra");
 var express = require('express');
+const path = require('path');
+const http = require('http');
+const bodyParser = require('body-parser');
+const {isRealString} = require('./server/utils/validation')
+const {Users} = require('./server/utils/users');
+
 var formidable = require('formidable'); //form upload processing
 var s_whiteboard = require("./s_whiteboard.js");
 
 var app = express();
 app.use(express.static(__dirname + '/public'));
 var server = require('http').Server(app);
+var users = new Users();
 server.listen(PORT);
 var io = require('socket.io')(server);
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+const { generateMessage ,generateLocationMessage} = require('./server/utils/message')
+
 console.log("Webserver & socketserver running on port:" + PORT);
 
 app.get('/loadwhiteboard', function (req, res) {
@@ -72,8 +85,47 @@ function progressUploadFormData(formData) {
 
 var allUsers = {};
 io.on('connection', function (socket) {
-
+    socket.on('join', (params,callback) => {
+        if(!isRealString(params.name) || !isRealString(params.room)){
+         return callback('Name and room name are required ');
+        }
+        //joining particular room
+        socket.join(params.room);
+        users.removeUser(socket.id);
+          users.addUser(socket.id, params.name, params.room);
+        //io.emit -> io.to(room name here)
+        //socket.broadcast -> socket.broadcast.to(room name).emit
+        io.to(params.room).emit('updateUserList', users.getUserList(params.room));
+        socket.emit('newMessage',generateMessage('Admin', 'welcome to chat room'));
+      socket.broadcast.to(params.room).emit('newMessage', generateMessage( 'Admin', `${params.name} has joined`));
+        callback();
+      });
+      socket.on('createMessage', (message, callback) => {
+        var user = users.getUser(socket.id);
+      
+        if (user && isRealString(message.text)) {
+          io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+        }
+      
+        callback();
+      });
+      
+       // ### io emits the event to all the user including the one who sends it  ###
+       socket.on('createLocationMessage', (coords) => {
+        var user = users.getUser(socket.id);
+      
+          if (user) {
+            io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));  
+          }
+        });
+      
     socket.on('disconnect', function () {
+        var user = users.removeUser(socket.id);
+
+        if (user) {
+          io.to(user.room).emit('updateUserList', users.getUserList(user.room));
+          io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left.`));
+        }
         delete allUsers[socket.id];
         socket.broadcast.emit('refreshUserBadges', null);
     });
