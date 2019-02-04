@@ -24,7 +24,7 @@ This is a lightweight NodeJS collaborative Whiteboard/Sketchboard witch can easi
 ## API
 Call your site with GET parameters to change the WhiteboardID or the Username
 
-`http://localhost:8080?whiteboardid=MYID&username=MYNAME`
+`http://localhost:8080?room=MYID&name=MYNAME`
 
 * whiteboardid => All people with the same ID are drawing on the same board
 * username => The name witch is showing to others while drawing
@@ -35,4 +35,4 @@ Call your site with GET parameters to change the WhiteboardID or the Username
 * This is just a sample layout to show the functions available
 * You shoud be able to customize without ever toutching the whiteboard.js (take a look at index.html & main.js)
 
-___ MIT License ___
+
