@@ -4,7 +4,7 @@ fs = require("fs-extra");
 var express = require('express');
 const path = require('path');
 const http = require('http');
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
 const {isRealString} = require('./server/utils/validation')
 const {Users} = require('./server/utils/users');
 
@@ -18,8 +18,9 @@ var users = new Users();
 server.listen(PORT);
 var io = require('socket.io')(server);
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: false,limit: '5mb' }));
+
+// app.use(bodyParser.json());
 
 const { generateMessage ,generateLocationMessage} = require('./server/utils/message')
 
@@ -49,6 +50,7 @@ app.post('/upload', function (req, res) { //File upload
 
     form.on('error', function (err) {
         console.log('File uplaod Error!');
+        console.log(err);
     });
 
     form.on('end', function () {

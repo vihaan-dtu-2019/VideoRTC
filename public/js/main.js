@@ -1,6 +1,6 @@
 var whiteboardId = getQueryVariable("room");
 whiteboardId = whiteboardId || "myNewWhiteboard";
-var myUsername = getQueryVariable("name");
+var myUsername = getQueryVariable("username");
 myUsername = myUsername || "unknown" + (Math.random() + "").substring(2, 6);
 
 var url = document.URL.substr(0, document.URL.lastIndexOf('/'));
@@ -198,6 +198,7 @@ window.addEventListener("drop", function (e) {
 }, false);
 
 function uploadImgAndAddToWhiteboard(base64data) {
+    console.log(base64data);
     var date = (+new Date());
     $.ajax({
         type: 'POST',
@@ -214,6 +215,7 @@ function uploadImgAndAddToWhiteboard(base64data) {
         },
         error: function (err) {
             console.error("Failed to upload frame: " + JSON.stringify(err));
+            console.log(data.whiteboardId,data.base64data);
         }
     });
 }

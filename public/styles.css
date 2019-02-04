@@ -10,6 +10,10 @@
   ul, li {
     list-style-position: inside;
   }
+
+  .whiteboardBtn {
+    margin-right: 2px;
+  }
   
   h3 {
     font-weight: 600;
