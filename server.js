@@ -1,6 +1,7 @@
 var PORT = 3000; //Set port for the app
 
 fs = require("fs-extra");
+var Serberries = require('serberries');
 var express = require('express');
 const path = require('path');
 const http = require('http');
@@ -17,10 +18,34 @@ var server = require('http').Server(app);
 var users = new Users();
 server.listen(PORT);
 var io = require('socket.io')(server);
+var SocketIO = require('socket.io');
 
-// app.use(bodyParser.urlencoded({ extended: false,limit: '5mb' }));
+var myserver = new Serberries({
+    path:__dirname+'/logic'
+});
 
-// app.use(bodyParser.json());
+
+myserver.on('error', function(errcode, msg, trace){
+    console.error("Error code: "+errcode+' ('+msg+')');
+    if(trace){
+        console.error(trace.message);
+        for (var i = 0; i < trace.stack.length; i++) {
+            console.error("   at "+trace.stack[i]);
+        }
+    }
+    console.error("");
+});
+
+myserver.on('loaded', function(urlpath, type){
+    console.log('URL to '+urlpath+' was '+type);
+});
+
+myserver.on('navigation', function(data){
+    console.log("Navigation to '"+data.path+"'");
+    console.log('  - '+data.headers['user-agent']);
+});
+
+
 
 const { generateMessage ,generateLocationMessage} = require('./server/utils/message')
 
@@ -85,12 +110,33 @@ function progressUploadFormData(formData) {
     });
 }
 
+// io = SocketIO({
+//     perMessageDeflate: false // Disable compression
+//   }).listen(myserver.server);
+
 var allUsers = {};
 io.on('connection', function (socket) {
     socket.on('join', (params,callback) => {
         if(!isRealString(params.name) || !isRealString(params.room)){
          return callback('Name and room name are required ');
         }
+
+        socket.on('bufferHeader', function(packet){
+            // Buffer header can be saved on server so it can be passed to new user
+            bufferHeader = packet;
+            socket.broadcast.emit('bufferHeader', packet);
+            console.log('working')
+        });
+    
+        // Broadcast the received buffer
+        socket.on('stream', function(packet){
+            socket.broadcast.emit('stream', packet);
+        });
+    
+        // Send buffer header to new user
+        socket.on('requestBufferHeader', function(){
+            socket.emit('bufferHeader', bufferHeader);
+        });
         //joining particular room
         socket.join(params.room);
         users.removeUser(socket.id);
