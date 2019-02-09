@@ -1,6 +1,6 @@
 var whiteboardId = getQueryVariable("room");
 whiteboardId = whiteboardId || "myNewWhiteboard";
-var myUsername = getQueryVariable("username");
+var myUsername = getQueryVariable("name");
 myUsername = myUsername || "unknown" + (Math.random() + "").substring(2, 6);
 
 var url = document.URL.substr(0, document.URL.lastIndexOf('/'));

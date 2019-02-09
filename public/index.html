@@ -13,10 +13,14 @@
 
 	<script type="text/javascript" src="./js/whiteboard.js"></script>
 	<script type="text/javascript" src="./js/main.js"></script>
-	<script type="text/javascript" src="./SFMediaStream.min.js"></script>
+	
+ <script type="" src="/AgoraRTCSDK-2.5.0.js"></script>
+
+	<!-- <script type="text/javascript" src="./SFMediaStream.min.js"></script> -->
 
 	<!--- CSS References -!-->
 	<link rel="stylesheet" href="./css/jquery-ui.min.css">
+	<!-- <link rel="stylesheet"  href="./vendor/bootstrap.min.css"> -->
 	<link href="./css/fontawesome-all.min.css" rel="stylesheet">
 	<link href="./css/main.css" rel="stylesheet">
 	 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
@@ -71,7 +75,7 @@
 	 
 	  </script>
 	</div>
-<div style="position: relative; margin: 0px; height: 90vh; width: 70%; overflow: hidden; float: left;" >
+<div style="position: relative; margin: 0px; height: 75vh; width: 70%; overflow: hidden; float: left;" >
 	  	  
 	<!---Whiteboard container -!-->
 	<div style="height: 100vh; width: 100%;" id="whiteboardContainer"></div>
@@ -142,13 +146,35 @@
 			<input style="display:none;" id="myFile" type="file" />
 		</div>
 		</div>
-</div>
-		<div>
-			<button onclick="asPresenter()" class="btn btn-danger">Presenter</button>
-	<button onclick="asStreamer()" class="btn btn-danger">Streamer</button>
-	<button onclick="streamerEffect()">Effect (for streamer)</button>
-	<input type="text" id="debug"><br>
-		</div>
+</div class= >
+		<div  class="row" style="width:65%; margin-left:20px;"> 
+			<div id="div_device" class="panel panel-default" style="width:40%;">
+				<div class="select">
+				<label for="audioSource">Audio source: </label><select id="audioSource"></select>
+				</div>
+				<div class="select">
+				<label for="videoSource">Video source: </label><select id="videoSource"></select>
+				</div>
+				</div>
+				
+				<div id="div_join" class="panel panel-default " style="width: 60%;" >
+				<div class="panel-body" style="width:60%">
+				App ID: <input id="appId" type="text" value="" size="36"></input>
+				Channel: <input id="channel" type="text" value="1000" size="4"></input>
+				Host: <input id="video" type="checkbox" checked></input>
+				<button id="join" class="btn btn-primary" onclick="join()">Join</button>
+				<button id="leave" class="btn btn-primary" onclick="leave()">Leave</button>
+				<button id="publish" class="btn btn-primary" onclick="publish()">Publish</button>
+				<button id="unpublish" class="btn btn-primary" onclick="unpublish()">Unpublish</button>
+				</div>
+				<div id="video" style="margin:0 auto; width: 40% ;float: right;">
+					<div id="agora_local" style="float:right;width:210px;height:147px;display:inline-block;"></div>
+			</div>	
+			</div>
+				
+			</div>
+
+		
 
 	<script src="/socket.io/socket.io.js"></script>
 	  <!-- <script type = 'text/javascript' src="./js/libs/jquery-3.3.1.min.js"></script> -->
@@ -164,79 +190,158 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1"
 		  crossorigin="anonymous"></script> -->
 		<script src="./js/libs/deparam.js"></script>
+		<script language="javascript">
+			if(!AgoraRTC.checkSystemRequirements()) {
+				alert("Your browser does not support WebRTC!");
+			}
+			/* select Log type */
+			// AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.NONE);
+			// AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.ERROR);
+			// AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.WARNING);
+			// AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.INFO);  
+			// AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.DEBUG);
+			/* simulated data to proof setLogLevel() */
+			AgoraRTC.Logger.error('this is error');
+			AgoraRTC.Logger.warning('this is warning');
+			AgoraRTC.Logger.info('this is info');
+			AgoraRTC.Logger.debug('this is debug');
+			var client, localStream, camera, microphone;
+			var audioSelect = document.querySelector('select#audioSource');
+			var videoSelect = document.querySelector('select#videoSource');
+			function join() {
+				document.getElementById("join").disabled = true;
+				document.getElementById("video").disabled = true;
+				var channel_key = null;
+				console.log("Init AgoraRTC client with App ID: " + appId.value);
+				client = AgoraRTC.createClient({mode: 'interop'});
+				client.init(appId.value, function () {
+					console.log("AgoraRTC client initialized");
+					client.join(channel_key, channel.value, null, function(uid) {
+						console.log("User " + uid + " join channel successfully");
+						if (document.getElementById("video").checked) {
+							camera = videoSource.value;
+							microphone = audioSource.value;
+							localStream = AgoraRTC.createStream({streamID: uid, audio: true, cameraId: camera, microphoneId: microphone, video: document.getElementById("video").checked, screen: false});
+							//localStream = AgoraRTC.createStream({streamID: uid, audio: false, cameraId: camera, microphoneId: microphone, video: false, screen: true, extensionId: 'minllpmhdgpndnkomcoccfekfegnlikg'});
+							if (document.getElementById("video").checked) {
+								localStream.setVideoProfile('720p_3');
+							}
+							// The user has granted access to the camera and mic.
+							localStream.on("accessAllowed", function() {
+								console.log("accessAllowed");
+							});
+							// The user has denied access to the camera and mic.
+							localStream.on("accessDenied", function() {
+								console.log("accessDenied");
+							});
+							localStream.init(function() {
+								console.log("getUserMedia successfully");
+								localStream.play('agora_local');
+								client.publish(localStream, function (err) {
+									console.log("Publish local stream error: " + err);
+								});
+								client.on('stream-published', function (evt) {
+									console.log("Publish local stream successfully");
+								});
+							}, function (err) {
+								console.log("getUserMedia failed", err);
+							});
+						}
+					}, function(err) {
+						console.log("Join channel failed", err);
+					});
+				}, function (err) {
+					console.log("AgoraRTC client init failed", err);
+				});
+				channelKey = "";
+				client.on('error', function(err) {
+					console.log("Got error msg:", err.reason);
+					if (err.reason === 'DYNAMIC_KEY_TIMEOUT') {
+						client.renewChannelKey(channelKey, function(){
+							console.log("Renew channel key successfully");
+						}, function(err){
+							console.log("Renew channel key failed: ", err);
+						});
+					}
+				});
+				client.on('stream-added', function (evt) {
+					var stream = evt.stream;
+					console.log("New stream added: " + stream.getId());
+					console.log("Subscribe ", stream);
+					client.subscribe(stream, function (err) {
+						console.log("Subscribe stream failed", err);
+					});
+				});
+				client.on('stream-subscribed', function (evt) {
+					var stream = evt.stream;
+					console.log("Subscribe remote stream successfully: " + stream.getId());
+					if ($('div#video #agora_remote'+stream.getId()).length === 0) {
+						$('div#video').empty();
+						$('div#video').append('<div id="agora_remote'+stream.getId()+'" style="float:right; margin:0 0 0 0; width:210px;height:147px;display:inline-block;"></div>');
+					}
+					stream.play('agora_remote' + stream.getId());
+				});
+				client.on('stream-removed', function (evt) {
+					var stream = evt.stream;
+					stream.stop();
+					$('#agora_remote' + stream.getId()).remove();
+					console.log("Remote stream is removed " + stream.getId());
+				});
+				client.on('peer-leave', function (evt) {
+					var stream = evt.stream;
+					if (stream) {
+						stream.stop();
+						$('#agora_remote' + stream.getId()).remove();
+						console.log(evt.uid + " leaved from this channel");
+					}
+				});
+			}
+			function leave() {
+				document.getElementById("leave").disabled = true;
+				client.leave(function () {
+					console.log("Leavel channel successfully");
+				}, function (err) {
+					console.log("Leave channel failed");
+				});
+			}
+			function publish() {
+				document.getElementById("publish").disabled = true;
+				document.getElementById("unpublish").disabled = false;
+				client.publish(localStream, function (err) {
+					console.log("Publish local stream error: " + err);
+				});
+			}
+			function unpublish() {
+				document.getElementById("publish").disabled = false;
+				document.getElementById("unpublish").disabled = true;
+				client.unpublish(localStream, function (err) {
+					console.log("Unpublish local stream failed" + err);
+				});
+			}
+			function getDevices() {
+				AgoraRTC.getDevices(function (devices) {
+					for (var i = 0; i !== devices.length; ++i) {
+						var device = devices[i];
+						var option = document.createElement('option');
+						option.value = device.deviceId;
+						if (device.kind === 'audioinput') {
+							option.text = device.label || 'microphone ' + (audioSelect.length + 1);
+							audioSelect.appendChild(option);
+						} else if (device.kind === 'videoinput') {
+							option.text = device.label || 'camera ' + (videoSelect.length + 1);
+							videoSelect.appendChild(option);
+						} else {
+							console.log('Some other kind of source/device: ', device);
+						}
+					}
+				});
+			}
+			//audioSelect.onchange = getDevices;
+			//videoSelect.onchange = getDevices;
+			getDevices();
+			</script>
 		
-	<script type="text/javascript">
-		var mySocket = io("/", {transports:['websocket']});
-		var debug = document.querySelector('#debug');
-			
-		// ===== Presenter =====
-		var presenterMedia = false;
-		function asPresenter(){
-			if(presenterMedia === false){
-				// Set latency to 100ms (Equal with streamer)
-				presenterMedia = new ScarletsMediaPresenter({
-				    audio:{
-				        channelCount:1,
-				        echoCancellation: false
-				    }
-				}, 100);
 
-				presenterMedia.onRecordingReady = function(packet){
-				    console.log("Recording started!");
-				    console.log("Header size: " + packet.data.size);
-
-				    // Every new client streamer must receive this header buffer data
-				    mySocket.emit('bufferHeader', packet);
-				}
-
-				presenterMedia.onBufferProcess = function(streamData){
-					debug.value = "Buffer sent: " + streamData[0].size + "bytes";
-				    mySocket.emit('stream', streamData);
-				}
-			}
-
-			presenterMedia.startRecording();
-		}
-
-		// ===== Streamer =====
-		var audioStreamer = false;
-		function asStreamer(){
-			if(audioStreamer === false){
-				// Set latency to 100ms (Equal with presenter)
-				console.log('d\hey')
-				audioStreamer = new ScarletsAudioStreamer(100);
-				audioStreamer.playStream();
-
-				// Buffer header must be received first
-				mySocket.on('bufferHeader', function(packet){
-				    audioStreamer.setBufferHeader(packet);
-				});
-
-				// Receive buffer and play it
-				mySocket.on('stream', function(packet){
-					debug.value = "Buffer received: "+packet[0].byteLength+"bytes";
-				    audioStreamer.receiveBuffer(packet);
-				});
-			}
-
-			// Request buffer header
-			mySocket.emit('requestBufferHeader', '');
-		}
-
-	//	===== Streamer Audio Effect =====
-		function streamerEffect(){
-			if(audioStreamer === false){
-				console.error("Streamer haven't been initialized");
-				return;
-			}
-
-			var ppDelay = ScarletsMediaEffect.pingPongDelay();
-
-			// Stream (source) -> Ping pong delay -> destination
-			audioStreamer.connect(ppDelay.input);
-			ppDelay.output.connect(ScarletsMedia.audioContext.destination);
-		}
-	</script>
 		  
 </body>
 

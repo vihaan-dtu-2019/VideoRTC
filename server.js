@@ -18,34 +18,6 @@ var server = require('http').Server(app);
 var users = new Users();
 server.listen(PORT);
 var io = require('socket.io')(server);
-var SocketIO = require('socket.io');
-
-var myserver = new Serberries({
-    path:__dirname+'/logic'
-});
-
-
-myserver.on('error', function(errcode, msg, trace){
-    console.error("Error code: "+errcode+' ('+msg+')');
-    if(trace){
-        console.error(trace.message);
-        for (var i = 0; i < trace.stack.length; i++) {
-            console.error("   at "+trace.stack[i]);
-        }
-    }
-    console.error("");
-});
-
-myserver.on('loaded', function(urlpath, type){
-    console.log('URL to '+urlpath+' was '+type);
-});
-
-myserver.on('navigation', function(data){
-    console.log("Navigation to '"+data.path+"'");
-    console.log('  - '+data.headers['user-agent']);
-});
-
-
 
 const { generateMessage ,generateLocationMessage} = require('./server/utils/message')
 
