@@ -25,7 +25,8 @@
 	<link href="./css/main.css" rel="stylesheet">
 	 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
     crossorigin="anonymous">
-  <link rel="stylesheet" type="text/css" href="styles.css">
+	<link rel="stylesheet" type="text/css" href="styles.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
 
 </head>
 <body>
@@ -155,6 +156,14 @@
 				<div class="select">
 				<label for="videoSource">Video source: </label><select id="videoSource"></select>
 				</div>
+				<br>
+				<div id="controls">
+					<button id="recordButton">Record</button>
+					<button id="pauseButton" disabled>Pause</button>
+					<button id="stopButton" disabled>Stop</button>
+				 </div>
+				 <div id="formats">Format: start recording to see sample rate</div>
+				 <ol id="recordingsList"></ol>
 				</div>
 				
 				<div id="div_join" class="panel panel-default " style="width: 60%;" >
@@ -164,8 +173,8 @@
 				Host: <input id="video" type="checkbox" checked></input>
 				<button id="join" class="btn btn-primary" onclick="join()">Join</button>
 				<button id="leave" class="btn btn-primary" onclick="leave()">Leave</button>
-				<button id="publish" class="btn btn-primary" onclick="publish()">Publish</button>
-				<button id="unpublish" class="btn btn-primary" onclick="unpublish()">Unpublish</button>
+				<button id="publish" class="btn btn-primary" onclick="publish()">Unmute</button>
+				<button id="unpublish" class="btn btn-primary" onclick="unpublish()">Mute</button>
 				</div>
 				<div id="video" style="margin:0 auto; width: 40% ;float: right;">
 					<div id="agora_local" style="float:right;width:210px;height:147px;display:inline-block;"></div>
@@ -174,7 +183,11 @@
 				
 			</div>
 
-		
+			
+	 
+			 <!-- inserting these scripts at the end to be able to use all the elements in the DOM -->
+			 <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
+			 <script src="./js/app.js"></script>
 
 	<script src="/socket.io/socket.io.js"></script>
 	  <!-- <script type = 'text/javascript' src="./js/libs/jquery-3.3.1.min.js"></script> -->

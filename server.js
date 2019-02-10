@@ -5,6 +5,8 @@ var Serberries = require('serberries');
 var express = require('express');
 const path = require('path');
 const http = require('http');
+const stringSimilarity = require('string-similarity');
+
 // const bodyParser = require('body-parser');
 const {isRealString} = require('./server/utils/validation')
 const {Users} = require('./server/utils/users');
@@ -14,6 +16,14 @@ var s_whiteboard = require("./s_whiteboard.js");
 
 var app = express();
 app.use(express.static(__dirname + '/public'));
+
+app.get('/getnotes', (req,res) => {
+    require('./routes/ind')
+    res.sendFile(path.join(__dirname,'/notes.html'))
+
+});
+var c = 2;
+var i=0;
 var server = require('http').Server(app);
 var users = new Users();
 server.listen(PORT);
@@ -87,11 +97,35 @@ function progressUploadFormData(formData) {
 //   }).listen(myserver.server);
 
 var allUsers = {};
+var msg = [];
 io.on('connection', function (socket) {
     socket.on('join', (params,callback) => {
+      var val = 0;
+       const abc = () => {
+
+       var obj = {
+            room: []
+         };
+         fs.readFile('room.json', 'utf8', function readFileCallback(err, data){
+            if (err){
+                console.log(err);
+            } else {
+            obj = JSON.parse(data); //now it an object
+            obj.room.push({room:params.room}); //add some data
+            json = JSON.stringify(obj); //convert it back to json
+            fs.writeFile('room.json', json, 'utf8', callback); // write it back 
+        }});
+    }
+    if(val = 0)
+    {
+    abc();
+    val=1;
+    }
         if(!isRealString(params.name) || !isRealString(params.room)){
+    
          return callback('Name and room name are required ');
         }
+    
 
         socket.on('bufferHeader', function(packet){
             // Buffer header can be saved on server so it can be passed to new user
@@ -120,16 +154,20 @@ io.on('connection', function (socket) {
       socket.broadcast.to(params.room).emit('newMessage', generateMessage( 'Admin', `${params.name} has joined`));
         callback();
       });
+      
       socket.on('createMessage', (message, callback) => {
         var user = users.getUser(socket.id);
-      
+        
+        msg.push(message);
         if (user && isRealString(message.text)) {
           io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
         }
+       
       
-        callback();
-      });
-      
+         callback();
+        
+       });
+    
        // ### io emits the event to all the user including the one who sends it  ###
        socket.on('createLocationMessage', (coords) => {
         var user = users.getUser(socket.id);
@@ -172,6 +210,9 @@ function sendToAllUsersOfWhiteboard(wid, ownSocketId, content) {
     }
 }
 
+
+
+
 //Prevent cross site scripting
 function escapeAllContentStrings(content, cnt) {
     if (!cnt)
@@ -189,3 +230,5 @@ function escapeAllContentStrings(content, cnt) {
     }
     return content;
 }
+
+

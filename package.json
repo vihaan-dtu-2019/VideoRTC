@@ -18,12 +18,15 @@
     "lightweight"
   ],
   "dependencies": {
+    "@google-cloud/speech": "^2.3.0",
     "express": "*",
     "formidable": "*",
     "fs-extra": "*",
+    "lexrank": "^1.0.5",
     "moment": "^2.24.0",
     "serberries": "^1.1.0",
-    "socket.io": "2.*"
+    "socket.io": "2.*",
+    "string-similarity": "^3.0.0"
   },
   "author": "HK",
   "license": "MIT"
